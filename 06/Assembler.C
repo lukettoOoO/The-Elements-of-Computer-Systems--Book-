@@ -110,7 +110,7 @@ void comp(char *m, char *line)
             ok_c=1;
     }
     char c[1024][1024];
-    char line_copy[strlen(line) + 1];
+    char line_copy[strlen(line)+1];
     strcpy(line_copy, line);
     char *p=strtok(line_copy, "=;");
     int n=0;
@@ -121,11 +121,29 @@ void comp(char *m, char *line)
         p=strtok(NULL, "=;");
     }
     if(ok_eq==1 && ok_c==0)
+    {
+        c[1][strlen(c[1])-1]='\0';
         strcpy(m, c[1]);
+    }
     if(ok_eq==0 && ok_c==1)
         strcpy(m, c[0]);
     if(ok_eq==1 && ok_c==1)
         strcpy(m, c[1]);
+}
+
+void jump(char *m, char *line)
+{
+    int ok=0;
+    int k=0;
+   for(int i=0; i<(int)strlen(line); i++)
+   {
+        if(ok==1)
+            m[k++]=line[i];
+        if(line[i]==';')
+            ok=1;
+   }
+   if(ok==0)
+    strcpy(m, "null\n");
 }
 
 command_type commandType(char *line)
@@ -154,7 +172,7 @@ void write_hack(char *filename, int size)
         exit(EXIT_FAILURE);
     }
 
-    //copy paste of the .asm file:
+    //copy-paste of the .asm file:
     /*for(int i=0; i<size; i++)
     {
         fprintf(f, "%s", asmb[i]);
@@ -164,6 +182,7 @@ void write_hack(char *filename, int size)
    char sb[1024];
    char mnd[8];
    char mnc[32];
+   char mnj[8];
     for(int i=0; i<size; i++)
     {
         if(commandType(asmb[i])==A_COMMAND)
@@ -175,7 +194,8 @@ void write_hack(char *filename, int size)
         {
             dest(mnd, asmb[i]);
             comp(mnc, asmb[i]);
-            fprintf(f, "commandType: C_COMMAND, dest: %s, comp: %s", mnd, mnc);
+            jump(mnj, asmb[i]);
+            fprintf(f, "commandType: C_COMMAND, dest: %s, comp: %s, jump: %s", mnd, mnc, mnj);
         }
         else if(commandType(asmb[i])==L_COMMAND)
         {
