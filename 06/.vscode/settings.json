@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "Assembler.C": "cpp"
+        "Assembler.C": "cpp",
+        "AssemblerBeta.C": "cpp"
     }
 }
