@@ -1,0 +1,9 @@
+add
+push segment 7
+pop segment 8
+label symbol
+goto symbol
+if-goto symbol
+function functionName 3
+call functionName 2
+return

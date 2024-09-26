@@ -1,0 +1,15 @@
+~~~ Luca's VM translator ~~~
+argument is directory
+.vm file found: SimpleAdd.vm
+
+
+     push constant 7
+push constant 7
+push constant 8
+push constant 8
+add
+add
+file read successfully
+vm[0]:push constant 7
+vm[1]:push constant 8
+vm[2]:add
