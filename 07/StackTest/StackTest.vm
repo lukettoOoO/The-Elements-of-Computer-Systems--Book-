@@ -43,3 +43,5 @@ and
 push constant 82
 or
 not
+push constant 0
+push constant 0

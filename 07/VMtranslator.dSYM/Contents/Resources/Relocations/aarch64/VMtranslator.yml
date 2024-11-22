@@ -1,5 +1,5 @@
 ---
 triple:          'arm64-apple-darwin'
-binary-path:     VMtranslator
+binary-path:     '/Users/luca/Documents/projects/The Elements of Computing Systems/07/VMtranslator'
 relocations:     []
 ...

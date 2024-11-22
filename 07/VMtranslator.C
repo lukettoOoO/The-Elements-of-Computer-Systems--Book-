@@ -1,4 +1,3 @@
-//half of the VM part 1 implementation, this file covers the parser module
 #include <stdio.h>
 #include <dirent.h>
 #include <sys/stat.h>
@@ -24,6 +23,10 @@ typedef enum{
     C_CALL,
     null
 }command_type;
+
+char output_filename[1024];
+char input_filename_global[1024];
+char current_input_filename[1024];
 
 int isDirectory(const char *path)
 {
@@ -202,10 +205,10 @@ int arg2(char *line)
     return NULL;
 }
 
-void openVMfile(const char *filename) //or path
+void openVMfile(const char *input_filename) //or path
 {
     FILE *f=NULL;
-    f=fopen(filename, "r");
+    f=fopen(input_filename, "r");
     if(f==NULL)
     {
         fprintf(stderr, "(openVMfile) error: opening file\n");
@@ -214,6 +217,7 @@ void openVMfile(const char *filename) //or path
 
     char *line=NULL;
     size_t bufsize=0;
+    int filename_set=0;
     while((line_size=getline(&line, &bufsize, f))!=-1)
     {
         removeWhitespace(line);
@@ -234,6 +238,21 @@ void openVMfile(const char *filename) //or path
                 exit(EXIT_FAILURE);
             }
             vm=temp;
+        }
+        if(filename_set==0)
+        {
+            int filename_size=strlen(input_filename_global)+1;
+            vm[lines]=(char*)malloc(filename_size*sizeof(char));
+            if(vm[lines]==NULL)
+            {
+                fprintf(stderr, "(openVMfile) error: memory allocation\n");
+                exit(EXIT_FAILURE);
+            }
+            strcpy(vm[lines], input_filename_global);
+            removeWhitespace(vm[lines]);
+            //printf("%s\n", vm[lines]);
+            lines++;
+            filename_set=1;
         }
         int trimmed_line_size=strlen(line)+1;
         vm[lines]=(char*)malloc(trimmed_line_size*sizeof(char));
@@ -256,12 +275,30 @@ void openVMfile(const char *filename) //or path
     }
 }
 
+void setFileName(char *filename, int is_directory)
+{
+    if(is_directory==0)
+    {
+        strncpy(output_filename, filename, strlen(filename)-3);
+        strcat(output_filename, ".asm");
+    }
+    else if(is_directory==1)
+    {
+        strcpy(output_filename, filename);
+        strcat(output_filename, ".asm");
+    }
+    printf("output file name: %s\n", output_filename);
+}
+
 void openVM(const char *path)
 {
     //this function takes place for the following routines: Constructor, hasMoreCommands, advance
     if(isDirectory(path)==1)
     {
         printf("argument is directory\n");
+        char modifiable_path[1024];
+        strcpy(modifiable_path, path);
+        setFileName(modifiable_path, 1);
         DIR *directory;
         struct dirent *entry;
         directory=opendir(path);
@@ -279,6 +316,8 @@ void openVM(const char *path)
                 strcat(filepath, path);
                 strcat(filepath, "/");
                 printf(".vm file found: %s\n", entry->d_name);
+                strcpy(input_filename_global, entry->d_name);
+                //printf("%s\n", input_filename_global);
                 strcat(filepath, entry->d_name);
                 openVMfile(filepath);
             }
@@ -299,7 +338,482 @@ void openVM(const char *path)
         else
         {
              printf("argument is file\n");
+             char modifiable_path[1024];
+             strcpy(modifiable_path, path);
+             setFileName(modifiable_path, 0);
              openVMfile(path);
+        }
+    }
+}
+
+void Constructor(FILE **of)
+{
+    *of=fopen(output_filename, "w");
+    if(*of==NULL)
+    {
+        fprintf(stderr, "(Constructor) error: opening file\n");
+        exit(EXIT_FAILURE);
+    }
+    fprintf(*of, "//initialize the stack pointer to 256\n");
+    fprintf(*of, "@256\n");
+    fprintf(*of, "D=A\n");
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "M=D\n");
+    fprintf(*of, "//initialize the LCL segment to 300\n");
+    fprintf(*of, "@300\n");
+    fprintf(*of, "D=A\n");
+    fprintf(*of, "@LCL\n");
+    fprintf(*of, "M=D\n");
+    fprintf(*of, "//initialize the ARG segment to 400\n");
+    fprintf(*of, "@400\n");
+    fprintf(*of, "D=A\n");
+    fprintf(*of, "@ARG\n");
+    fprintf(*of, "M=D\n");
+    fprintf(*of, "//initialize the THIS segment to 500\n");
+    fprintf(*of, "@500\n");
+    fprintf(*of, "D=A\n");
+    fprintf(*of, "@THIS\n");
+    fprintf(*of, "M=D\n");
+    fprintf(*of, "//initialize the THAT segment to 600\n");
+    fprintf(*of, "@600\n");
+    fprintf(*of, "D=A\n");
+    fprintf(*of, "@THAT\n");
+    fprintf(*of, "M=D\n");
+}
+
+void Close(FILE *of)
+{
+    if(fclose(of)!=0)
+    {
+        fprintf(stderr, "(Close) error: closing file\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void writeArithmetic(char *command, FILE **of)
+{
+    static long int label_count=0;
+    if(strcmp(command, "add")==0)
+    {
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M-1\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "D=M\n");
+        fprintf(*of, "@R13\n");
+        fprintf(*of, "M=D\n");
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M-1\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "D=M\n");
+        fprintf(*of, "@R13\n");
+        fprintf(*of, "D=D+M\n");
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "M=D\n");
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M+1\n");
+    }
+    else if(strcmp(command, "sub")==0)
+    {
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M-1\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "D=M\n");
+        fprintf(*of, "@R13\n");
+        fprintf(*of, "M=D\n");
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M-1\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "D=M\n");
+        fprintf(*of, "@R13\n");
+        fprintf(*of, "D=D-M\n");
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "M=D\n");
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M+1\n");
+    }
+    else if(strcmp(command, "neg")==0)
+    {
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M-1\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "M=-M\n");
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M+1\n");
+    }
+    else if(strcmp(command, "eq")==0)
+    {
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M-1\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "D=M\n");
+
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M-1\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "D=D-M\n");
+
+        fprintf(*of, "@EQ_TRUE%ld\n", label_count);
+        fprintf(*of, "D;JEQ\n");
+
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "M=0\n");
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M+1\n");
+        fprintf(*of, "@END_EQ%ld\n", label_count);
+        fprintf(*of, "0;JMP\n");
+
+        fprintf(*of, "(EQ_TRUE%ld)\n", label_count);
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "M=-1\n");
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M+1\n");
+
+        fprintf(*of, "(END_EQ%ld)\n", label_count);
+
+        label_count++;
+    }
+    else if(strcmp(command, "gt")==0)
+    {
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M-1\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "D=M\n");
+
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M-1\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "D=M-D\n");
+
+        fprintf(*of, "@GT_TRUE%ld\n", label_count);
+        fprintf(*of, "D;JGT\n");
+
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "M=0\n");
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M+1\n");
+        fprintf(*of, "@END_GT%ld\n", label_count);
+        fprintf(*of, "0;JMP\n");
+
+        fprintf(*of, "(GT_TRUE%ld)\n", label_count);
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "M=-1\n");
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M+1\n");
+
+        fprintf(*of, "(END_GT)%ld\n", label_count);
+
+        label_count++;
+    }
+    else if(strcmp(command, "lt")==0)
+    {
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M-1\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "D=M\n");
+
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M-1\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "D=M-D\n");
+
+        fprintf(*of, "@LT_TRUE%ld\n", label_count);
+        fprintf(*of, "D;JLT\n");
+
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "M=0\n");
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M+1\n");
+        fprintf(*of, "@END_LT%ld\n", label_count);
+        fprintf(*of, "0;JMP\n");
+
+        fprintf(*of, "(LT_TRUE%ld)\n", label_count);
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "M=-1\n");
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M+1\n");
+
+        fprintf(*of, "(END_LT%ld)\n", label_count);
+
+        label_count++;
+    }
+    else if(strcmp(command, "and")==0)
+    {
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M-1\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "D=M\n");
+
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M-1\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "D=D&M\n");
+        
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "M=D\n");
+
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M+1\n");
+    }
+    else if(strcmp(command, "or")==0)
+    {
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M-1\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "D=M\n");
+
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M-1\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "D=D|M\n");
+
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "M=D\n");
+
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M+1\n");
+    }
+    else if(strcmp(command, "not")==0)
+    {
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M-1\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "M=!M\n");
+
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M+1\n");
+    }
+}
+
+void writePushPop(command_type command, char *segment, int index, FILE **of)
+{
+    if (command==C_PUSH) 
+    {
+        //fprintf(*of, "push %s %d\n", segment, index);
+        if(strcmp(segment, "constant")==0)
+        {
+            fprintf(*of, "@%d\n", index);
+            fprintf(*of, "D=A\n");
+            fprintf(*of, "@SP\n");
+            fprintf(*of, "A=M\n");
+            fprintf(*of, "M=D\n");
+            fprintf(*of, "@SP\n");
+            fprintf(*of, "M=M+1\n");
+        }
+        else if(strcmp(segment, "local")==0)
+        {
+            fprintf(*of, "@%d\n", index);
+            fprintf(*of, "D=A\n");
+            fprintf(*of, "@LCL\n");
+            fprintf(*of, "D=D+M\n");
+            fprintf(*of, "A=D\n");
+            fprintf(*of, "D=M\n");
+            fprintf(*of, "@SP\n");
+            fprintf(*of, "A=M\n");
+            fprintf(*of, "M=D\n");
+            fprintf(*of, "@SP\n");
+            fprintf(*of, "M=M+1\n");
+        }
+        else if(strcmp(segment, "argument")==0)
+        {
+            fprintf(*of, "@%d\n", index);
+            fprintf(*of, "D=A\n");
+            fprintf(*of, "@ARG\n");
+            fprintf(*of, "D=D+M\n");
+            fprintf(*of, "A=D\n");
+            fprintf(*of, "D=M\n");
+            fprintf(*of, "@SP\n");
+            fprintf(*of, "A=M\n");
+            fprintf(*of, "M=D\n");
+            fprintf(*of, "@SP\n");
+            fprintf(*of, "M=M+1\n");
+        }
+        else if(strcmp(segment, "this")==0)
+        {
+            fprintf(*of, "@%d\n", index);
+            fprintf(*of, "D=A\n");
+            fprintf(*of, "@THIS\n");
+            fprintf(*of, "D=D+M\n");
+            fprintf(*of, "A=D\n");
+            fprintf(*of, "D=M\n");
+            fprintf(*of, "@SP\n");
+            fprintf(*of, "A=M\n");
+            fprintf(*of, "M=D\n");
+            fprintf(*of, "@SP\n");
+            fprintf(*of, "M=M+1\n");
+        }
+        else if(strcmp(segment, "that")==0)
+        {
+            fprintf(*of, "@%d\n", index);
+            fprintf(*of, "D=A\n");
+            fprintf(*of, "@THAT\n");
+            fprintf(*of, "D=D+M\n");
+            fprintf(*of, "A=D\n");
+            fprintf(*of, "D=M\n");
+            fprintf(*of, "@SP\n");
+            fprintf(*of, "A=M\n");
+            fprintf(*of, "M=D\n");
+            fprintf(*of, "@SP\n");
+            fprintf(*of, "M=M+1\n");
+        }
+        else if(strcmp(segment, "static")==0)
+        {
+            fprintf(*of, "@%s.%d\n", current_input_filename, index);
+            fprintf(*of, "D=M\n");
+            fprintf(*of, "@SP\n");
+            fprintf(*of, "A=M\n");
+            fprintf(*of, "M=D\n");
+            fprintf(*of, "@SP\n");
+            fprintf(*of, "M=M+1\n");
+        }
+        else if(strcmp(segment, "temp")==0)
+        {
+            fprintf(*of, "@R%d\n", index+5);
+            fprintf(*of, "D=M\n");
+            fprintf(*of, "@SP\n");
+            fprintf(*of, "A=M\n");
+            fprintf(*of, "M=D\n");
+            fprintf(*of, "@SP\n");
+            fprintf(*of, "M=M+1\n");
+        }
+        else if(strcmp(segment, "pointer")==0)
+        {
+            if(index==0)
+            {
+                fprintf(*of, "@THIS\n");
+                fprintf(*of, "D=M\n");
+                fprintf(*of, "@SP\n");
+                fprintf(*of, "A=M\n");
+                fprintf(*of, "M=D\n");
+                fprintf(*of, "@SP\n");
+                fprintf(*of, "M=M+1\n");
+            }
+            else if(index==1)
+            {
+                fprintf(*of, "@THAT\n");
+                fprintf(*of, "D=M\n");
+                fprintf(*of, "@SP\n");
+                fprintf(*of, "A=M\n");
+                fprintf(*of, "M=D\n");
+                fprintf(*of, "@SP\n");
+                fprintf(*of, "M=M+1\n"); 
+            }
+        }
+    } 
+    else if (command == C_POP) 
+    {
+        if(strcmp(segment, "local")==0)
+        {
+            fprintf(*of, "@%d\n", index);
+            fprintf(*of, "D=A\n");
+            fprintf(*of, "@LCL\n");
+            fprintf(*of, "A=M\n");
+            fprintf(*of, "D=D+A\n");
+            fprintf(*of, "@R13\n");
+            fprintf(*of, "M=D\n");
+            fprintf(*of, "@SP\n");
+            fprintf(*of, "M=M-1\n");
+            fprintf(*of, "A=M\n");
+            fprintf(*of, "D=M\n");
+            fprintf(*of, "@R13\n");
+            fprintf(*of, "A=M\n");
+            fprintf(*of, "M=D\n");
+        }
+        else if(strcmp(segment, "argument")==0)
+        {
+            fprintf(*of, "@%d\n", index);
+            fprintf(*of, "D=A\n");
+            fprintf(*of, "@ARG\n");
+            fprintf(*of, "D=D+M\n");
+            fprintf(*of, "@R13\n");
+            fprintf(*of, "M=D\n");
+            fprintf(*of, "@SP\n");
+            fprintf(*of, "M=M-1\n");
+            fprintf(*of, "A=M\n");
+            fprintf(*of, "D=M\n");
+            fprintf(*of, "@R13\n");
+            fprintf(*of, "A=M\n");
+            fprintf(*of, "M=D\n");
+        }
+        else if(strcmp(segment, "this")==0)
+        {
+            fprintf(*of, "@%d\n", index);
+            fprintf(*of, "D=A\n");
+            fprintf(*of, "@THIS\n");
+            fprintf(*of, "D=D+M\n");
+            fprintf(*of, "@R13\n");
+            fprintf(*of, "M=D\n");
+            fprintf(*of, "@SP\n");
+            fprintf(*of, "M=M-1\n");
+            fprintf(*of, "A=M\n");
+            fprintf(*of, "D=M\n");
+            fprintf(*of, "@R13\n");
+            fprintf(*of, "A=M\n");
+            fprintf(*of, "M=D\n");
+        }
+        else if(strcmp(segment, "that")==0)
+        {
+            fprintf(*of, "@%d\n", index);
+            fprintf(*of, "D=A\n");
+            fprintf(*of, "@THAT\n");
+            fprintf(*of, "D=D+M\n");
+            fprintf(*of, "@R13\n");
+            fprintf(*of, "M=D\n");
+            fprintf(*of, "@SP\n");
+            fprintf(*of, "M=M-1\n");
+            fprintf(*of, "A=M\n");
+            fprintf(*of, "D=M\n");
+            fprintf(*of, "@R13\n");
+            fprintf(*of, "A=M\n");
+            fprintf(*of, "M=D\n");
+        }
+        else if(strcmp(segment, "static")==0)
+        {
+            fprintf(*of, "@SP\n");
+            fprintf(*of, "M=M-1\n");
+            fprintf(*of, "A=M\n");
+            fprintf(*of, "D=M\n");
+            fprintf(*of, "@%s.%d\n", current_input_filename, index);
+            fprintf(*of, "M=D\n");
+        }
+        else if(strcmp(segment, "temp")==0)
+        {
+            fprintf(*of, "@SP\n");
+            fprintf(*of, "M=M-1\n");
+            fprintf(*of, "A=M\n");
+            fprintf(*of, "D=M\n");
+            fprintf(*of, "@R%d\n", index+5);
+            fprintf(*of, "M=D\n");
+        }
+        else if(strcmp(segment, "pointer")==0)
+        {
+            if(index==0)
+            {
+                fprintf(*of, "@SP\n");
+                fprintf(*of, "M=M-1\n");
+                fprintf(*of, "A=M\n");
+                fprintf(*of, "D=M\n");
+                fprintf(*of, "@THIS\n");
+                fprintf(*of, "M=D\n");
+            }
+            else if(index==1)
+            {
+                fprintf(*of, "@SP\n");
+                fprintf(*of, "M=M-1\n");
+                fprintf(*of, "A=M\n");
+                fprintf(*of, "D=M\n");
+                fprintf(*of, "@THAT\n");
+                fprintf(*of, "M=D\n");
+            }
         }
     }
 }
@@ -308,8 +822,37 @@ int main(int argc, char **argv)
 {
     printf("~~~ Luca's VM translator ~~~\n");
     openVM(argv[1]);
-    //testing/debugging:
+    FILE *of=NULL;
+    Constructor(&of);
     for(int i=0; i<lines; i++)
+    {
+        char *com=NULL;
+        com=comment(vm[i]);
+        fprintf(of, "%s", com);
+        if(strstr(vm[i], ".vm")!=NULL)
+        {
+            strcpy(current_input_filename, vm[i]);
+            char *p=strtok(current_input_filename, ".");
+            if(p!=NULL)
+            {
+                strcpy(current_input_filename, p);
+            }
+        }
+        //printf("%s %s\n", vm[i], current_input_filename);
+        if(commandType(vm[i])==C_PUSH || commandType(vm[i])==C_POP)
+        {
+            writePushPop(commandType(vm[i]), arg1(vm[i]), arg2(vm[i]), &of);
+        }
+        else
+        {
+            writeArithmetic(vm[i], &of);
+        }
+    }
+    Close(of);
+    printf("output file written successfully\n");
+
+    //testing/debugging:
+    /*for(int i=0; i<lines; i++)
         {
            //printf("%s\n", vm[i]);
            char *com=NULL;
@@ -354,8 +897,9 @@ int main(int argc, char **argv)
             }
 
             printf("\n");
-        }
-
+        }*/
+    /*for(int i=0; i<lines; i++)
+        printf("%s\n", vm[i]);*/
     for(int i=0; i<lines; i++)
         free(vm[i]);
     free(vm);
