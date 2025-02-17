@@ -1,7 +1,6 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/7/MemoryAccess/BasicTest/BasicTestVME.tst
 
 // Tests and illustrates BasicTest.vm on the VM simulator.
 // Starts by setting the stack pointer and the base addresses

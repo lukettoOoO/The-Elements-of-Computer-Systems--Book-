@@ -1,7 +1,6 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/3/b/RAM4K.tst
 
 load RAM4K.hdl,
 output-file RAM4K.out,

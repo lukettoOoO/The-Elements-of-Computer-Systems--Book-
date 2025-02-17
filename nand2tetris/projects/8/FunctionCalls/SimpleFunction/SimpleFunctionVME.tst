@@ -1,7 +1,6 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/8/FunctionCalls/SimpleFunction/SimpleFunctionVME.tst
 
 // Tests and illustrates SimpleFunction.vm in the VM emulator. 
 // Before executing the code, initializes the stack pointer

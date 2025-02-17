@@ -23,53 +23,27 @@ M=D
 D=A
 @THAT
 M=D
-//push constant 131
-@131
+//test.vm
+//push constant 2
+@2
 D=A
 @SP
 A=M
 M=D
 @SP
 M=M+1
-//push constant 19
-@19
-D=A
-@SP
-A=M
-M=D
-@SP
-M=M+1
-//pop that 3
+//push constant 3
 @3
 D=A
-@THAT
-D=D+M
-@R13
+@SP
+A=M
 M=D
+@SP
+M=M+1
+//pop static 10
 @SP
 M=M-1
 A=M
 D=M
-@R13
-A=M
+@test.10
 M=D
-//push constant 5
-@5
-D=A
-@SP
-A=M
-M=D
-@SP
-M=M+1
-//push that 3
-@3
-D=A
-@THAT
-D=D+M
-A=D
-D=M
-@SP
-A=M
-M=D
-@SP
-M=M+1

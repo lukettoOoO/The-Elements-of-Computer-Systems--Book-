@@ -1,7 +1,6 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/5/ComputerMax.tst
 
 // Tests the Computer chip by having it execute the program Max.hack.
 // The program computes maximum(R0, R1) and writes the result in RAM[2].

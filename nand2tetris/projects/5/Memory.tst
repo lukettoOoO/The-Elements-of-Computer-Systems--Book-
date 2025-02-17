@@ -1,7 +1,6 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/05/Memory.tst
 
 // Tests the Memory chip by inputting values to selected addresses, 
 // verifying that these addresses were indeed written to, and verifying  

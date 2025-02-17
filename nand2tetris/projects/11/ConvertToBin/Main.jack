@@ -1,7 +1,6 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/11/ConvertToBin/Main.jack
 /**
  * Unpacks a 16-bit number into its binary representation:
  * Takes the 16-bit number stored in RAM[8000] and stores its individual 

@@ -1,8 +1,6 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/11/Pong/Ball.jack
-// (Same as projects/9/Pong/Ball.jack)
 /**
  * A graphical ball in a Pong game. Characterized by a screen location and 
  * distance of last destination. Has methods for drawing, erasing and moving

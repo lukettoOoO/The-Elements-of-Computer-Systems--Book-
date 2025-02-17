@@ -1,7 +1,6 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/1/DMux4Way.tst
 
 load DMux4Way.hdl,
 output-file DMux4Way.out,

@@ -27,6 +27,7 @@ typedef enum{
 char output_filename[1024];
 char input_filename_global[1024];
 char current_input_filename[1024];
+char current_function_name[1024];
 
 int isDirectory(const char *path)
 {
@@ -292,7 +293,7 @@ void setFileName(char *filename, int is_directory)
 
 void openVM(const char *path)
 {
-    //this function takes place for the following routines: Constructor, hasMoreCommands, advance
+    //this function takes place for the following routines: hasMoreCommands, advance
     if(isDirectory(path)==1)
     {
         printf("argument is directory\n");
@@ -338,6 +339,8 @@ void openVM(const char *path)
         else
         {
              printf("argument is file\n");
+             strcpy(input_filename_global, path);
+             //printf("%s\n", input_filename_global);
              char modifiable_path[1024];
              strcpy(modifiable_path, path);
              setFileName(modifiable_path, 0);
@@ -355,6 +358,7 @@ void Constructor(FILE **of)
         exit(EXIT_FAILURE);
     }
 
+    strcpy(current_function_name, "Sys.init");
     //the following code substitutes the writeInit function:
     fprintf(*of, "//initialize the stack pointer to 256\n");
     fprintf(*of, "@256\n");
@@ -372,18 +376,18 @@ void Constructor(FILE **of)
     fprintf(*of, "@ARG\n");
     fprintf(*of, "M=D\n");
     fprintf(*of, "//initialize the THIS segment to 500\n");
-    fprintf(*of, "@500\n");
+    fprintf(*of, "@3000\n");
     fprintf(*of, "D=A\n");
     fprintf(*of, "@THIS\n");
     fprintf(*of, "M=D\n");
     fprintf(*of, "//initialize the THAT segment to 600\n");
-    fprintf(*of, "@600\n");
+    fprintf(*of, "@3010\n");
     fprintf(*of, "D=A\n");
     fprintf(*of, "@THAT\n");
     fprintf(*of, "M=D\n");
-    fprintf(*of, "//call Sys.init\n");
-    fprintf(*of, "@Sys.init\n");
-    fprintf(*of, "0;JMP\n");
+    //fprintf(*of, "//call Sys.init\n");
+    //fprintf(*of, "@Sys.init\n");
+    //fprintf(*of, "0;JMP\n");
 }
 
 void Close(FILE *of)
@@ -844,6 +848,158 @@ void writeIf(char *label, FILE **of)
     fprintf(*of, "D;JNE\n");
 }
 
+void writeReturn(FILE **of)
+{
+    fprintf(*of, "@LCL\n");
+    fprintf(*of, "D=M\n");
+    fprintf(*of, "@R13\n");
+    fprintf(*of, "M=D\n");
+
+    fprintf(*of, "@5\n");
+    fprintf(*of, "D=A\n");
+    fprintf(*of, "@R13\n");
+    fprintf(*of, "A=M\n");
+    fprintf(*of, "A=A-D\n");
+    fprintf(*of, "D=M\n");
+    fprintf(*of, "@R14\n");
+    fprintf(*of, "M=D\n");
+
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "M=M-1\n");
+    fprintf(*of, "A=M\n");
+    fprintf(*of, "D=M\n");
+    fprintf(*of, "@ARG\n");
+    fprintf(*of, "M=D\n");
+    
+    fprintf(*of, "@ARG\n");
+    fprintf(*of, "D=M\n");
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "M=D+1\n");
+    
+    fprintf(*of, "@R13\n");
+    fprintf(*of, "D=M\n");
+    fprintf(*of, "@1\n");
+    fprintf(*of, "D=D-A\n");
+    fprintf(*of, "A=D\n");
+    fprintf(*of, "D=M\n");
+    fprintf(*of, "@THAT\n");
+    fprintf(*of, "M=D\n");
+
+    fprintf(*of, "@R13\n");
+    fprintf(*of, "D=M\n");
+    fprintf(*of, "@2\n");
+    fprintf(*of, "D=D-A\n");
+    fprintf(*of, "A=D\n");
+    fprintf(*of, "D=M\n");
+    fprintf(*of, "@THIS\n");
+    fprintf(*of, "M=D\n");
+
+    fprintf(*of, "@R13\n");
+    fprintf(*of, "D=M\n");
+    fprintf(*of, "@3\n");
+    fprintf(*of, "D=D-A\n");
+    fprintf(*of, "A=D\n");
+    fprintf(*of, "D=M\n");
+    fprintf(*of, "@ARG\n");
+    fprintf(*of, "M=D\n");
+
+    fprintf(*of, "@R13\n");
+    fprintf(*of, "D=M\n");
+    fprintf(*of, "@4\n");
+    fprintf(*of, "D=D-A\n");
+    fprintf(*of, "A=D\n");
+    fprintf(*of, "D=M\n");
+    fprintf(*of, "@LCL\n");
+    fprintf(*of, "M=D\n");
+
+    fprintf(*of, "@R14\n");
+    fprintf(*of, "0;JMP\n");
+}
+
+void writeFunction(char *functionName, int numLocals, FILE **of)
+{
+    fprintf(*of, "(%s)\n", functionName);
+    for(int i = 0; i < numLocals; i++)
+    {
+        fprintf(*of, "@0\n");
+        fprintf(*of, "D=A\n");
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "A=M\n");
+        fprintf(*of, "M=D\n");
+        fprintf(*of, "@SP\n");
+        fprintf(*of, "M=M+1\n");
+    }
+    current_function_name[0]='\0';
+    strcpy(current_function_name, functionName);
+}
+
+void writeCall(char *functionName, int numArgs, FILE **of)
+{
+    //printf("function called: %s\t number of arguments: %d\n", functionName, numArgs);
+    static int ret_id=0;
+
+    fprintf(*of, "@%s$ret.%d\n", current_function_name, ret_id);
+    fprintf(*of, "D=A\n");
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "A=M\n");
+    fprintf(*of, "M=D\n");
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "M=M+1\n");
+
+    fprintf(*of, "@LCL\n");
+    fprintf(*of, "D=A\n");
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "A=M\n");
+    fprintf(*of, "M=D\n");
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "M=M+1\n");
+
+    fprintf(*of, "@ARG\n");
+    fprintf(*of, "D=A\n");
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "A=M\n");
+    fprintf(*of, "M=D\n");
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "M=M+1\n");
+
+    fprintf(*of, "@THIS\n");
+    fprintf(*of, "D=A\n");
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "A=M\n");
+    fprintf(*of, "M=D\n");
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "M=M+1\n");
+
+    fprintf(*of, "@THAT\n");
+    fprintf(*of, "D=A\n");
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "A=M\n");
+    fprintf(*of, "M=D\n");
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "M=M+1\n");
+
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "D=M\n");
+    fprintf(*of, "@5\n");
+    fprintf(*of, "D=D-A\n");
+    fprintf(*of, "@%d\n", numArgs);
+    fprintf(*of, "D=D-A\n");
+    fprintf(*of, "@ARG\n");
+    fprintf(*of, "M=D\n");
+
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "D=M\n");
+    fprintf(*of, "@LCL\n");
+    fprintf(*of, "M=D\n");
+
+    fprintf(*of, "@%s\n", functionName);
+    fprintf(*of, "0;JMP\n");
+
+    fprintf(*of, "(@%s$ret.%d)\n", current_function_name, ret_id);
+
+    ret_id++;
+}
+
 char *parseLabel(char *str)
 {
     char *p = strtok(str, " ");
@@ -856,6 +1012,11 @@ char *parseLabel(char *str)
 int main(int argc, char **argv)
 {
     printf("~~~ Luca's VM translator ~~~\n");
+    if(argc <= 1)
+    {
+        fprintf(stderr, "(main) error: not enough arguments\n");
+        exit(EXIT_FAILURE);
+    }
     openVM(argv[1]);
     FILE *of=NULL;
     Constructor(&of);
@@ -894,6 +1055,18 @@ int main(int argc, char **argv)
         else if(commandType(vm[i])==C_IF)
         {
             writeIf(parseLabel(vm[i]), &of);
+        }
+        else if(commandType(vm[i])==C_CALL)
+        {
+            writeCall(arg1(vm[i]), arg2(vm[i]), &of);
+        }
+        else if(commandType(vm[i])==C_RETURN)
+        {
+            writeReturn(&of);
+        }
+        else if(commandType(vm[i])==C_FUNCTION)
+        {
+            writeFunction(arg1(vm[i]), arg2(vm[i]), &of);
         }
     }
     Close(of);

@@ -1,7 +1,6 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/5/ComputerAdd.tst
 
 // Tests the Computer chip by having it execute the program Add.hack.
 // The program adds up the constants 2 and 3 and writes the result in RAM[0]. 

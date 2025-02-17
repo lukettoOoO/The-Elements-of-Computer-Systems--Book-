@@ -1,7 +1,6 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/8/FunctionCalls/StaticsTest/StaticsTest.tst
 
 // Tests StaticTest.asm in the CPU emulator.
 // This assembly file results from translating the staticsTest folder.

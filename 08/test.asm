@@ -23,19 +23,50 @@ M=D
 D=A
 @THAT
 M=D
-//call Sys.init
-@Sys.init
-0;JMP
-//
-//label LUCA
-(LUCA)
-//goto FUNC1
-@FUNC1
-0;JMP
-//if-goto MY_LABEL
+//test.vm
+//push constant 15
+@15
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+//push constant 21
+@21
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+//pop pointer 0
 @SP
 M=M-1
 A=M
 D=M
-@MY_LABEL
-D;JNE
+@THIS
+M=D
+//pop pointer 1
+@SP
+M=M-1
+A=M
+D=M
+@THAT
+M=D
+//push constant 30
+@30
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+//push pointer 0
+@THIS
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1

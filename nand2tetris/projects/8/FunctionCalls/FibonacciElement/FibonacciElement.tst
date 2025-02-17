@@ -1,7 +1,6 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/8/FunctionCalls/FibonacciElement/FibonacciElement.tst
 
 // Tests FibonacciElement.asm on the CPU emulator. 
 // FibonacciElement.asm results from translating Main.vm and Sys.vm into

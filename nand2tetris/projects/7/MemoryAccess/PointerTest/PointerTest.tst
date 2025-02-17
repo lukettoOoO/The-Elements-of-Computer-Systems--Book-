@@ -1,7 +1,6 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/7/MemoryAccess/PointerTest/PointerTest.tst
 
 // Tests PointerTest.asm on the CPU emulator.
 

@@ -1,8 +1,6 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/11/Pong/Bat.jack
-// (Same as projects/9/Pong/Bat.jack)
 /**
  * A graphical bat in a Pong game. 
  * Displayed as a filled horizontal rectangle that has a screen location,

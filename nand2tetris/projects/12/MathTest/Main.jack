@@ -1,9 +1,8 @@
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
 // by Nisan and Schocken, MIT Press.
-// File name: projects/12/MathTest/Main.jack
 
-// Tests the OS Math class.
+/** Test program for the OS Math class. */
 class Main {
 
     // Performs various mathematical operations, using calls to the Math class methods.

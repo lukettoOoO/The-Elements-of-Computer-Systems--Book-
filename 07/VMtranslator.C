@@ -338,6 +338,8 @@ void openVM(const char *path)
         else
         {
              printf("argument is file\n");
+             strcpy(input_filename_global, path);
+             //printf("%s\n", input_filename_global);
              char modifiable_path[1024];
              strcpy(modifiable_path, path);
              setFileName(modifiable_path, 0);
@@ -370,12 +372,12 @@ void Constructor(FILE **of)
     fprintf(*of, "@ARG\n");
     fprintf(*of, "M=D\n");
     fprintf(*of, "//initialize the THIS segment to 500\n");
-    fprintf(*of, "@500\n");
+    fprintf(*of, "@3000\n");
     fprintf(*of, "D=A\n");
     fprintf(*of, "@THIS\n");
     fprintf(*of, "M=D\n");
     fprintf(*of, "//initialize the THAT segment to 600\n");
-    fprintf(*of, "@600\n");
+    fprintf(*of, "@3010\n");
     fprintf(*of, "D=A\n");
     fprintf(*of, "@THAT\n");
     fprintf(*of, "M=D\n");

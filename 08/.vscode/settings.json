@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "VMtranslator.C": "cpp"
+        "VMtranslator.C": "cpp",
+        "Assembler.C": "cpp"
     }
 }
