@@ -371,12 +371,12 @@ void Constructor(FILE **of)
     fprintf(*of, "D=A\n");
     fprintf(*of, "@ARG\n");
     fprintf(*of, "M=D\n");
-    fprintf(*of, "//initialize the THIS segment to 500\n");
+    fprintf(*of, "//initialize the THIS segment to 3000\n");
     fprintf(*of, "@3000\n");
     fprintf(*of, "D=A\n");
     fprintf(*of, "@THIS\n");
     fprintf(*of, "M=D\n");
-    fprintf(*of, "//initialize the THAT segment to 600\n");
+    fprintf(*of, "//initialize the THAT segment to 3010\n");
     fprintf(*of, "@3010\n");
     fprintf(*of, "D=A\n");
     fprintf(*of, "@THAT\n");

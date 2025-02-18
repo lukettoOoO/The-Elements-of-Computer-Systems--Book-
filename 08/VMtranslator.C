@@ -372,15 +372,15 @@ void Constructor(FILE **of)
     fprintf(*of, "M=D\n");
     fprintf(*of, "//initialize the ARG segment to 400\n");
     fprintf(*of, "@400\n");
-    fprintf(*of, "D=A\n");
+    fprintf(*of, "D=A\n"); 
     fprintf(*of, "@ARG\n");
     fprintf(*of, "M=D\n");
-    fprintf(*of, "//initialize the THIS segment to 500\n");
+    fprintf(*of, "//initialize the THIS segment to 3000\n");
     fprintf(*of, "@3000\n");
     fprintf(*of, "D=A\n");
     fprintf(*of, "@THIS\n");
     fprintf(*of, "M=D\n");
-    fprintf(*of, "//initialize the THAT segment to 600\n");
+    fprintf(*of, "//initialize the THAT segment to 3010\n");
     fprintf(*of, "@3010\n");
     fprintf(*of, "D=A\n");
     fprintf(*of, "@THAT\n");
@@ -869,6 +869,7 @@ void writeReturn(FILE **of)
     fprintf(*of, "A=M\n");
     fprintf(*of, "D=M\n");
     fprintf(*of, "@ARG\n");
+    fprintf(*of, "A=M\n"); //?
     fprintf(*of, "M=D\n");
     
     fprintf(*of, "@ARG\n");
@@ -876,7 +877,7 @@ void writeReturn(FILE **of)
     fprintf(*of, "@SP\n");
     fprintf(*of, "M=D+1\n");
     
-    fprintf(*of, "@R13\n");
+    fprintf(*of, "@R13\n"); //@R13 - endFrame, @R14 - retAddr
     fprintf(*of, "D=M\n");
     fprintf(*of, "@1\n");
     fprintf(*of, "D=D-A\n");
@@ -909,7 +910,7 @@ void writeReturn(FILE **of)
     fprintf(*of, "D=D-A\n");
     fprintf(*of, "A=D\n");
     fprintf(*of, "D=M\n");
-    fprintf(*of, "@LCL\n");
+    fprintf(*of, "@LCL\n"); 
     fprintf(*of, "M=D\n");
 
     fprintf(*of, "@R14\n");
@@ -947,7 +948,7 @@ void writeCall(char *functionName, int numArgs, FILE **of)
     fprintf(*of, "M=M+1\n");
 
     fprintf(*of, "@LCL\n");
-    fprintf(*of, "D=A\n");
+    fprintf(*of, "D=M\n");
     fprintf(*of, "@SP\n");
     fprintf(*of, "A=M\n");
     fprintf(*of, "M=D\n");
@@ -955,7 +956,7 @@ void writeCall(char *functionName, int numArgs, FILE **of)
     fprintf(*of, "M=M+1\n");
 
     fprintf(*of, "@ARG\n");
-    fprintf(*of, "D=A\n");
+    fprintf(*of, "D=M\n");
     fprintf(*of, "@SP\n");
     fprintf(*of, "A=M\n");
     fprintf(*of, "M=D\n");
@@ -963,7 +964,7 @@ void writeCall(char *functionName, int numArgs, FILE **of)
     fprintf(*of, "M=M+1\n");
 
     fprintf(*of, "@THIS\n");
-    fprintf(*of, "D=A\n");
+    fprintf(*of, "D=M\n");
     fprintf(*of, "@SP\n");
     fprintf(*of, "A=M\n");
     fprintf(*of, "M=D\n");
@@ -971,7 +972,7 @@ void writeCall(char *functionName, int numArgs, FILE **of)
     fprintf(*of, "M=M+1\n");
 
     fprintf(*of, "@THAT\n");
-    fprintf(*of, "D=A\n");
+    fprintf(*of, "D=M\n");
     fprintf(*of, "@SP\n");
     fprintf(*of, "A=M\n");
     fprintf(*of, "M=D\n");
@@ -995,7 +996,7 @@ void writeCall(char *functionName, int numArgs, FILE **of)
     fprintf(*of, "@%s\n", functionName);
     fprintf(*of, "0;JMP\n");
 
-    fprintf(*of, "(@%s$ret.%d)\n", current_function_name, ret_id);
+    fprintf(*of, "(%s$ret.%d)\n", current_function_name, ret_id);
 
     ret_id++;
 }

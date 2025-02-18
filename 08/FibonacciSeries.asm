@@ -13,13 +13,13 @@ M=D
 D=A
 @ARG
 M=D
-//initialize the THIS segment to 500
-@500
+//initialize the THIS segment to 3000
+@3000
 D=A
 @THIS
 M=D
-//initialize the THAT segment to 600
-@600
+//initialize the THAT segment to 3010
+@3010
 D=A
 @THAT
 M=D
