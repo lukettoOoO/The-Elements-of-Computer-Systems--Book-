@@ -1,28 +1,3 @@
-//initialize the stack pointer to 256
-@256
-D=A
-@SP
-M=D
-//initialize the LCL segment to 300
-@300
-D=A
-@LCL
-M=D
-//initialize the ARG segment to 400
-@400
-D=A
-@ARG
-M=D
-//initialize the THIS segment to 3000
-@3000
-D=A
-@THIS
-M=D
-//initialize the THAT segment to 3010
-@3010
-D=A
-@THAT
-M=D
 //SimpleFunction.vm
 //function SimpleFunction.test 2
 (SimpleFunction.test)
@@ -167,6 +142,7 @@ M=M-1
 A=M
 D=M
 @ARG
+A=M
 M=D
 @ARG
 D=M
@@ -205,71 +181,5 @@ D=M
 @LCL
 M=D
 @R14
+A=M
 0;JMP
-//push constant 13
-@13
-D=A
-@SP
-A=M
-M=D
-@SP
-M=M+1
-//push constant 20
-@20
-D=A
-@SP
-A=M
-M=D
-@SP
-M=M+1
-//call SimpleFunction.test 2
-@SimpleFunction.test$ret.0
-D=A
-@SP
-A=M
-M=D
-@SP
-M=M+1
-@LCL
-D=A
-@SP
-A=M
-M=D
-@SP
-M=M+1
-@ARG
-D=A
-@SP
-A=M
-M=D
-@SP
-M=M+1
-@THIS
-D=A
-@SP
-A=M
-M=D
-@SP
-M=M+1
-@THAT
-D=A
-@SP
-A=M
-M=D
-@SP
-M=M+1
-@SP
-D=M
-@5
-D=D-A
-@2
-D=D-A
-@ARG
-M=D
-@SP
-D=M
-@LCL
-M=D
-@SimpleFunction.test
-0;JMP
-(@SimpleFunction.test$ret.0)

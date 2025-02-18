@@ -1,0 +1,6 @@
+function Sys.init 0
+	push constant 4
+	push constant 8
+	call SimpleFunction.test 2
+label END  
+	goto END  // loops infinitely

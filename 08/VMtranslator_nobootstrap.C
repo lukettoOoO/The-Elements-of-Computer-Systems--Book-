@@ -349,73 +349,6 @@ void openVM(const char *path)
     }
 }
 
-void writeCall(char *functionName, int numArgs, FILE **of)
-{
-    printf("function called: %s\t number of arguments: %d\n", functionName, numArgs);
-    static int ret_id=0;
-
-    fprintf(*of, "@%s$ret.%d\n", current_function_name, ret_id);
-    fprintf(*of, "D=A\n");
-    fprintf(*of, "@SP\n");
-    fprintf(*of, "A=M\n");
-    fprintf(*of, "M=D\n");
-    fprintf(*of, "@SP\n");
-    fprintf(*of, "M=M+1\n");
-
-    fprintf(*of, "@LCL\n");
-    fprintf(*of, "D=M\n");
-    fprintf(*of, "@SP\n");
-    fprintf(*of, "A=M\n");
-    fprintf(*of, "M=D\n");
-    fprintf(*of, "@SP\n");
-    fprintf(*of, "M=M+1\n");
-
-    fprintf(*of, "@ARG\n");
-    fprintf(*of, "D=M\n");
-    fprintf(*of, "@SP\n");
-    fprintf(*of, "A=M\n");
-    fprintf(*of, "M=D\n");
-    fprintf(*of, "@SP\n");
-    fprintf(*of, "M=M+1\n");
-
-    fprintf(*of, "@THIS\n");
-    fprintf(*of, "D=M\n");
-    fprintf(*of, "@SP\n");
-    fprintf(*of, "A=M\n");
-    fprintf(*of, "M=D\n");
-    fprintf(*of, "@SP\n");
-    fprintf(*of, "M=M+1\n");
-
-    fprintf(*of, "@THAT\n");
-    fprintf(*of, "D=M\n");
-    fprintf(*of, "@SP\n");
-    fprintf(*of, "A=M\n");
-    fprintf(*of, "M=D\n");
-    fprintf(*of, "@SP\n");
-    fprintf(*of, "M=M+1\n");
-
-    fprintf(*of, "@SP\n");
-    fprintf(*of, "D=M\n");
-    fprintf(*of, "@5\n");
-    fprintf(*of, "D=D-A\n");
-    fprintf(*of, "@%d\n", numArgs);
-    fprintf(*of, "D=D-A\n");
-    fprintf(*of, "@ARG\n");
-    fprintf(*of, "M=D\n");
-
-    fprintf(*of, "@SP\n");
-    fprintf(*of, "D=M\n");
-    fprintf(*of, "@LCL\n");
-    fprintf(*of, "M=D\n");
-
-    fprintf(*of, "@%s\n", functionName);
-    fprintf(*of, "0;JMP\n");
-
-    fprintf(*of, "(%s$ret.%d)\n", current_function_name, ret_id);
-
-    ret_id++;
-}
-
 void Constructor(FILE **of)
 {
     *of=fopen(output_filename, "w");
@@ -424,14 +357,15 @@ void Constructor(FILE **of)
         fprintf(stderr, "(Constructor) error: opening file\n");
         exit(EXIT_FAILURE);
     }
+
+    strcpy(current_function_name, "Sys.init");
     //the following code substitutes the writeInit function:
     fprintf(*of, "//initialize the stack pointer to 256\n");
     fprintf(*of, "@256\n");
     fprintf(*of, "D=A\n");
     fprintf(*of, "@SP\n");
     fprintf(*of, "M=D\n");
-    //the default convention for the memory segments (if Sys.init is not used)
-    /*fprintf(*of, "//initialize the LCL segment to 300\n");
+    fprintf(*of, "//initialize the LCL segment to 300\n");
     fprintf(*of, "@300\n");
     fprintf(*of, "D=A\n");
     fprintf(*of, "@LCL\n");
@@ -450,11 +384,10 @@ void Constructor(FILE **of)
     fprintf(*of, "@3010\n");
     fprintf(*of, "D=A\n");
     fprintf(*of, "@THAT\n");
-    fprintf(*of, "M=D\n");*/
-    //bootstrap:
-    strcpy(current_function_name, "Sys.init");
-    fprintf(*of, "//call Sys.init\n");
-    writeCall(current_function_name, 0, of);
+    fprintf(*of, "M=D\n");
+    //fprintf(*of, "//call Sys.init\n");
+    //fprintf(*of, "@Sys.init\n");
+    //fprintf(*of, "0;JMP\n");
 }
 
 void Close(FILE *of)
@@ -896,12 +829,12 @@ void writePushPop(command_type command, char *segment, int index, FILE **of)
 
 void writeLabel(char *label, FILE **of)
 {
-    fprintf(*of, "(%s$%s)\n", current_function_name, label);
+    fprintf(*of, "(%s)\n", label);
 }
 
 void writeGoto(char *label, FILE **of)
 {
-    fprintf(*of, "@%s$%s\n", current_function_name, label);
+    fprintf(*of, "@%s\n", label);
     fprintf(*of, "0;JMP\n");
 }
 
@@ -911,7 +844,7 @@ void writeIf(char *label, FILE **of)
     fprintf(*of, "M=M-1\n");
     fprintf(*of, "A=M\n");
     fprintf(*of, "D=M\n");
-    fprintf(*of, "@%s$%s\n", current_function_name, label);
+    fprintf(*of, "@%s\n", label);
     fprintf(*of, "D;JNE\n");
 }
 
@@ -981,7 +914,6 @@ void writeReturn(FILE **of)
     fprintf(*of, "M=D\n");
 
     fprintf(*of, "@R14\n");
-    fprintf(*of, "A=M\n");
     fprintf(*of, "0;JMP\n");
 }
 
@@ -1000,6 +932,73 @@ void writeFunction(char *functionName, int numLocals, FILE **of)
     }
     current_function_name[0]='\0';
     strcpy(current_function_name, functionName);
+}
+
+void writeCall(char *functionName, int numArgs, FILE **of)
+{
+    //printf("function called: %s\t number of arguments: %d\n", functionName, numArgs);
+    static int ret_id=0;
+
+    fprintf(*of, "@%s$ret.%d\n", current_function_name, ret_id);
+    fprintf(*of, "D=A\n");
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "A=M\n");
+    fprintf(*of, "M=D\n");
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "M=M+1\n");
+
+    fprintf(*of, "@LCL\n");
+    fprintf(*of, "D=M\n");
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "A=M\n");
+    fprintf(*of, "M=D\n");
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "M=M+1\n");
+
+    fprintf(*of, "@ARG\n");
+    fprintf(*of, "D=M\n");
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "A=M\n");
+    fprintf(*of, "M=D\n");
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "M=M+1\n");
+
+    fprintf(*of, "@THIS\n");
+    fprintf(*of, "D=M\n");
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "A=M\n");
+    fprintf(*of, "M=D\n");
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "M=M+1\n");
+
+    fprintf(*of, "@THAT\n");
+    fprintf(*of, "D=M\n");
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "A=M\n");
+    fprintf(*of, "M=D\n");
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "M=M+1\n");
+
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "D=M\n");
+    fprintf(*of, "@5\n");
+    fprintf(*of, "D=D-A\n");
+    fprintf(*of, "@%d\n", numArgs);
+    fprintf(*of, "D=D-A\n");
+    fprintf(*of, "@ARG\n");
+    fprintf(*of, "M=D\n");
+
+    fprintf(*of, "@SP\n");
+    fprintf(*of, "D=M\n");
+    fprintf(*of, "@LCL\n");
+    fprintf(*of, "M=D\n");
+
+    fprintf(*of, "@%s\n", functionName);
+    fprintf(*of, "0;JMP\n");
+
+    fprintf(*of, "(%s$ret.%d)\n", current_function_name, ret_id);
+
+    ret_id++;
 }
 
 char *parseLabel(char *str)
