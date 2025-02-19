@@ -936,7 +936,7 @@ void writeReturn(FILE **of)
     fprintf(*of, "A=M\n");
     fprintf(*of, "D=M\n");
     fprintf(*of, "@ARG\n");
-    fprintf(*of, "A=M\n"); //?
+    fprintf(*of, "A=M\n");
     fprintf(*of, "M=D\n");
     
     fprintf(*of, "@ARG\n");
@@ -1014,6 +1014,7 @@ char *parseLabel(char *str)
 int main(int argc, char **argv)
 {
     printf("~~~ Luca's VM translator ~~~\n");
+    printf("!!! If possible, do not include whitespaces/comments, it might not work fully\n");
     if(argc <= 1)
     {
         fprintf(stderr, "(main) error: not enough arguments\n");

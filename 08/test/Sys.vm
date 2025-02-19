@@ -1,6 +1,5 @@
 function Sys.init 0
-	push constant 4
-	push constant 8
-	call SimpleFunction.test 2
+	push constant 5
+	call Main.sum 1
 label END  
 	goto END  // loops infinitely
