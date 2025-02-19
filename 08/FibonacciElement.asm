@@ -183,6 +183,7 @@ D=M
 @LCL
 M=D
 @R14
+A=M
 0;JMP
 //label N_GE_2               // if n >= 2 returns fib(n - 2) + fib(n - 1)
 (Main.fibonacci$N_GE_2)
@@ -422,6 +423,7 @@ D=M
 @LCL
 M=D
 @R14
+A=M
 0;JMP
 //Sys.vm
 //function Sys.init 0

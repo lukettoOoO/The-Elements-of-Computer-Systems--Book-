@@ -430,7 +430,7 @@ void Constructor(FILE **of)
     fprintf(*of, "D=A\n");
     fprintf(*of, "@SP\n");
     fprintf(*of, "M=D\n");
-    //the default convention for the memory segments (if Sys.init is not used)
+    //the default convention for the memory segments (if Sys.init is not used):
     /*fprintf(*of, "//initialize the LCL segment to 300\n");
     fprintf(*of, "@300\n");
     fprintf(*of, "D=A\n");
