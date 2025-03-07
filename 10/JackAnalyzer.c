@@ -8,20 +8,113 @@
 //The JackTokenizer module:
 //Constructor:
 
+#define CHUNK 32
+
 FILE *inputFile;
+char *currentToken = NULL; //current token from the contents of the input file/files
+char *inputStream = NULL; //contents of the input file/files
+int inputSize = 0; //size of the current input file
+
+void removeCharacter(int pos)
+{
+    for(int i = pos; i < inputSize; i++)
+    {
+        inputStream[i] = inputStream[i+1];
+    }
+    inputSize--;
+    inputStream[inputSize] = '\0';
+}
+
 void Constructor(const char *inputName)
 {
+    //printf("COMSTRUCTOR INPUT NAME: %s\n", inputName);
+    inputStream = NULL;
+    inputSize = 0;
     inputFile = fopen(inputName, "r");
     if(inputFile == NULL)
     {
         fprintf(stderr, "(Constructor): error opening file\n");
         exit(EXIT_FAILURE);
     }
+
+    char c = ' ';
+    int currentSize = 0;
+    inputStream = (char*)malloc(CHUNK * sizeof(char));
+    currentSize = currentSize + CHUNK;
+    if(inputStream == NULL)
+    {
+        fprintf(stderr, "(Constructor): error allocating memory\n");
+        exit(EXIT_FAILURE);
+    }
+    while((c = fgetc(inputFile)) != EOF)
+    {
+        if(inputSize == currentSize)
+        {
+            char *p = (char*)realloc(inputStream, (currentSize + CHUNK) * sizeof(char));
+            currentSize = currentSize + CHUNK;
+            if(p == NULL)
+            {
+                fprintf(stderr, "(Constructor): error reallocating memory\n");
+                free(inputStream);
+                exit(EXIT_FAILURE);
+            }
+            inputStream = p;
+        }
+        inputStream[inputSize++] = c;
+    }
+
+    for(int i = 0; i < inputSize - 1; i++)
+    {
+        //removing single comments
+        if(inputStream[i] == '/' && inputStream[i+1] == '/')
+        {
+            while(inputStream[i] != '\n' && inputStream[i] != '\0')
+            {
+                removeCharacter(i);
+            }
+        }
+        //removing API comments
+        if(i < inputSize - 2 && inputStream[i] == '/' && inputStream[i+1] == '*' && inputStream[i+2] == '*')
+        {
+            removeCharacter(i);
+            removeCharacter(i);
+            removeCharacter(i);
+            while(!(inputStream[i] == '*' && inputStream[i+1] == '/') && inputStream[i] != '\0')
+            {
+                removeCharacter(i);
+            }
+            removeCharacter(i);
+            removeCharacter(i);
+        }
+        //removing comments until closing
+        if(inputStream[i] == '/' && inputStream[i+1] == '*')
+        {
+            removeCharacter(i);
+            removeCharacter(i);
+            while(!(inputStream[i] == '*' && inputStream[i+1] == '/') && inputStream[i] != '\0')
+            {
+                removeCharacter(i);
+            }
+            removeCharacter(i);
+            removeCharacter(i);
+        }
+    }
+      
+    //printf("%s", inputStream);
 }
 
 bool hasMoreTokens()
 {
-    
+    //REVIEW THIS!!!
+    if(currentToken == NULL)
+        return false;
+    return true;
+}
+
+void advance()
+{
+    //REVIEW THIS!!!
+    currentToken = strtok(NULL, "\n\r\t\f\v");
 }
 
 char **JackTokenizer(const char *inputName)
@@ -30,6 +123,16 @@ char **JackTokenizer(const char *inputName)
     //printf("jack tokenizer file input: %s\n", inputName);
     Constructor(inputName);
 
+    //STRTOK IS NOT REALLY POSSIBLE, ITERATE THROUGH INPUT STREAM
+    currentToken = strtok(inputStream, "\n\r\t\f\v");
+    while(hasMoreTokens())
+    {
+        printf("%s\n", currentToken);
+        advance();
+    }
+
+    currentToken = NULL;
+    free(inputStream);
     return token;
 }
 
