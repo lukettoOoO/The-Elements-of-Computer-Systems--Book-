@@ -11,9 +11,13 @@
 #define CHUNK 32
 
 FILE *inputFile;
-char *currentToken = NULL; //current token from the contents of the input file/files
+char *currentLine = NULL; //current line from the contents of the input file/files
 char *inputStream = NULL; //contents of the input file/files
 int inputSize = 0; //size of the current input file
+char currentToken[32768];
+int currentTokenIndex = 0;
+
+char *symbol = "{}()[].,;+-*/&|<>=-";
 
 void removeCharacter(int pos)
 {
@@ -27,7 +31,7 @@ void removeCharacter(int pos)
 
 void Constructor(const char *inputName)
 {
-    //printf("COMSTRUCTOR INPUT NAME: %s\n", inputName);
+    //printf("CONSTRUCTOR INPUT NAME: %s\n", inputName);
     inputStream = NULL;
     inputSize = 0;
     inputFile = fopen(inputName, "r");
@@ -105,33 +109,119 @@ void Constructor(const char *inputName)
 
 bool hasMoreTokens()
 {
-    //REVIEW THIS!!!
-    if(currentToken == NULL)
+    if(currentLine == NULL)
         return false;
     return true;
 }
 
 void advance()
 {
-    //REVIEW THIS!!!
-    currentToken = strtok(NULL, "\n\r\t\f\v");
+    currentLine = strtok(NULL, "\n\r\t\f\v");
+}
+
+void clearCurrentToken()
+{
+    memset(currentToken, 0, sizeof(currentToken));
+    currentTokenIndex = 0;
+}
+
+void getIntegerConstant(int *i)
+{
+    while(isdigit(currentLine[*i]))
+    {
+        currentToken[currentTokenIndex++] = currentLine[*i];
+        (*i)++;
+    }
+    currentToken[currentTokenIndex] = '\0';
+}
+
+void getStringConstant(int *i)
+{
+    (*i)++;
+    while(currentLine[*i] != '"')
+    {
+        currentToken[currentTokenIndex++] = currentLine[*i];
+        (*i)++;
+    }
+    currentToken[currentTokenIndex] = '\0';
+}
+
+void getSymbol(int *i)
+{
+    char *found = strchr(symbol, currentLine[*i]);
+    currentToken[currentTokenIndex++] = found[0];
+    currentToken[currentTokenIndex] = '\0';
+    //printf("DEBUG: Symbol at index %d: '%c'\n", i, found[0]);
+}
+
+void getKeywordOrIdentifier(int *i)
+{
+    while(isalpha(currentLine[*i]))
+    {
+        currentToken[currentTokenIndex++] = currentLine[*i];
+        (*i)++;
+    }
+    (*i)--;
+    currentToken[currentTokenIndex] = '\0';
 }
 
 char **JackTokenizer(const char *inputName)
 {
+    //CONTINUE TESTING THE TOKENIZER IN MORE DETAIL, TEST WITH EDGE CASES
+    //THEN MOVE ON TO THE OTHER FUNCTIONS
     char **token = NULL;
     //printf("jack tokenizer file input: %s\n", inputName);
     Constructor(inputName);
 
-    //STRTOK IS NOT REALLY POSSIBLE, ITERATE THROUGH INPUT STREAM
-    currentToken = strtok(inputStream, "\n\r\t\f\v");
+    currentLine = strtok(inputStream, "\n\r\t\f\v");
+    if(strlen(currentLine) > 32767)
+    {
+        fprintf(stderr, "(JackTokenizer): line length exceeded");
+        exit(EXIT_FAILURE);
+    }
     while(hasMoreTokens())
     {
-        printf("%s\n", currentToken);
+        printf("LINE: %s\n", currentLine);
+        int i = 0;
+        while(i < strlen(currentLine))
+        {
+            if(isspace(currentLine[i]))
+            {
+                i++;
+            }
+            if(isdigit(currentLine[i]))
+            {
+                getIntegerConstant(&i);
+                printf("INTEGER: %s\n", currentToken);
+                clearCurrentToken();
+            }
+            if(currentLine[i] == '"')
+            {
+                getStringConstant(&i);
+                printf("STRING: %s\n", currentToken);
+                clearCurrentToken();
+            }
+            if(strchr(symbol, currentLine[i]) != NULL)
+            {
+                getSymbol(&i);
+                if(currentToken[0] != '\0')
+                {
+                    printf("SYMBOL: %s\n", currentToken);
+                }
+                clearCurrentToken();
+            }
+            if(isalpha(currentLine[i]))
+            {
+                getKeywordOrIdentifier(&i);
+                printf("KEYIDENT: %s\n", currentToken);
+                clearCurrentToken();
+            }
+            i++;
+        }
         advance();
     }
 
-    currentToken = NULL;
+    currentLine = NULL;
     free(inputStream);
     return token;
 }
