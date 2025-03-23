@@ -156,7 +156,7 @@ void getSymbol(int *i)
 
 void getKeywordOrIdentifier(int *i)
 {
-    while(isalpha(currentLine[*i]))
+    while(isalnum(currentLine[*i]) || currentLine[*i] == '_')
     {
         currentToken[currentTokenIndex++] = currentLine[*i];
         (*i)++;
@@ -167,12 +167,13 @@ void getKeywordOrIdentifier(int *i)
 
 char **JackTokenizer(const char *inputName)
 {
-    //CONTINUE TESTING THE TOKENIZER IN MORE DETAIL, TEST WITH EDGE CASES
-    //THEN MOVE ON TO THE OTHER FUNCTIONS
     char **token = NULL;
     //printf("jack tokenizer file input: %s\n", inputName);
     Constructor(inputName);
-
+    if(!strlen(inputStream))
+    {
+        return token;
+    }
     currentLine = strtok(inputStream, "\n\r\t\f\v");
     if(strlen(currentLine) > 32767)
     {
@@ -210,7 +211,7 @@ char **JackTokenizer(const char *inputName)
                 }
                 clearCurrentToken();
             }
-            if(isalpha(currentLine[i]))
+            if(isalpha(currentLine[i]) || currentLine[i] == '_')
             {
                 getKeywordOrIdentifier(&i);
                 printf("KEYIDENT: %s\n", currentToken);
