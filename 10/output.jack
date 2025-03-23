@@ -1,10 +1,11 @@
 ~~~ Luca's Jack Analyzer ~~~
-argument is: file
-LINE: let sum=10;
-KEYIDENT: let
-KEYIDENT: sum
-SYMBOL: =
-INTEGER: 10
-SYMBOL: ;
+argument is: directory
+.jack file found: Square.jack
+tokenized: Square.jack
+created output file: Square.xml
+.jack file found: SquareGame.jack
+tokenized: SquareGame.jack
+created output file: SquareGame.xml
+.jack file found: Main.jack
 tokenized: Main.jack
 created output file: Main.xml
