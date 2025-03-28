@@ -1,11 +1,44 @@
 ~~~ Luca's Jack Analyzer ~~~
-argument is: directory
-.jack file found: Square.jack
-tokenized: Square.jack
-created output file: Square.xml
-.jack file found: SquareGame.jack
-tokenized: SquareGame.jack
-created output file: SquareGame.xml
-.jack file found: Main.jack
+argument is: file
 tokenized: Main.jack
 created output file: Main.xml
+token size: 39
+class
+Main
+{
+function
+void
+main
+(
+)
+{
+var
+int
+x
+,
+y
+;
+let
+x
+=
+10
+;
+let
+y
+=
+x
++
+5
+;
+do
+Output
+.
+printInt
+(
+y
+)
+;
+return
+;
+}
+}

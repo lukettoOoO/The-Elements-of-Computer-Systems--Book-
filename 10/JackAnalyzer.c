@@ -9,15 +9,16 @@
 //Constructor:
 
 #define CHUNK 32
+#define MAX_HACK_SIZE 32768
 
 FILE *inputFile;
 char *currentLine = NULL; //current line from the contents of the input file/files
 char *inputStream = NULL; //contents of the input file/files
 int inputSize = 0; //size of the current input file
-char currentToken[32768];
+char currentToken[MAX_HACK_SIZE];
 int currentTokenIndex = 0;
 
-char *symbol = "{}()[].,;+-*/&|<>=-";
+char *symbol = "{}()[].,;+-*/&|<>=~";
 
 void removeCharacter(int pos)
 {
@@ -165,11 +166,28 @@ void getKeywordOrIdentifier(int *i)
     currentToken[currentTokenIndex] = '\0';
 }
 
+char *tokenAlloc(char **token, int tokenSize, int size)
+{
+    char *t = (char*)malloc(size * sizeof(char));
+    if(t == NULL)
+    {
+        fprintf(stderr, "(tokenAlloc): Memory allocation error\n");
+        for(int i = 0; i < tokenSize; i++)
+        {
+            if(token[i] != NULL)
+                free(token[i]);
+        }
+        if(token != NULL)
+            free(token);
+        exit(EXIT_FAILURE);
+    }
+    return t;
+}
+
 char **JackTokenizer(const char *inputName, int *tokenSize)
 {
     char **token = NULL;
-    int current_size = 0;
-    int size = CHUNK;
+    int currentSize = 0;
     //printf("jack tokenizer file input: %s\n", inputName);
     Constructor(inputName);
     if(!strlen(inputStream))
@@ -177,48 +195,21 @@ char **JackTokenizer(const char *inputName, int *tokenSize)
         return token;
     }
     currentLine = strtok(inputStream, "\n\r\t\f\v");
-    token = (char**)malloc(CHUNK * sizeof(char*));
+    token = (char**)malloc(MAX_HACK_SIZE * sizeof(char*));
     if(token == NULL)
     {
         fprintf(stderr, "(JackTokenizer): Memory allocation error\n");
         exit(EXIT_FAILURE);
     }
-    if(strlen(currentLine) > 32767)
+    if(strlen(currentLine) > MAX_HACK_SIZE - 1)
     {
         fprintf(stderr, "(JackTokenizer): line length exceeded\n");
         exit(EXIT_FAILURE);
     }
     while(hasMoreTokens())
     {
-        if(current_size == size)
-        {
-            char **t = (char**)realloc(token, (size + CHUNK) * sizeof(char*));
-            size += CHUNK;
-            if(t == NULL)
-            {
-                fprintf(stderr, "(JackTokenizer): Memory allocation error\n");
-                for(int i = 0; i < current_size; i++)
-                {
-                    free(token[i]);
-                }
-                free(token);
-                exit(EXIT_FAILURE);
-            }
-            token = t;
-        }
         //current_size has to be incremented after every strcpy, make a function for individiual token line
         //memory allocation
-        token[current_size] = (char*)malloc((strlen(currentToken) + 1) * sizeof(char));
-        if(token[current_size] == NULL)
-        {
-            fprintf(stderr, "(JackTokenizer): Memory allocation error\n");
-                for(int i = 0; i < current_size; i++)
-                {
-                    free(token[i]);
-                }
-                free(token);
-                exit(EXIT_FAILURE);
-        }
         //printf("LINE: %s\n", currentLine);
         int i = 0;
         while(i < strlen(currentLine))
@@ -231,14 +222,18 @@ char **JackTokenizer(const char *inputName, int *tokenSize)
             {
                 getIntegerConstant(&i);
                 //printf("INTEGER: %s\n", currentToken);
-                strcpy(token[current_size], currentToken);
+                token[currentSize] = tokenAlloc(token, currentSize, strlen(currentToken));
+                strcpy(token[currentSize], currentToken);
+                currentSize++;
                 clearCurrentToken();
             }
             if(currentLine[i] == '"')
             {
                 getStringConstant(&i);
                 //printf("STRING: %s\n", currentToken);
-                strcpy(token[current_size], currentToken);
+                token[currentSize] = tokenAlloc(token, currentSize, strlen(currentToken));
+                strcpy(token[currentSize], currentToken);
+                currentSize++;
                 clearCurrentToken();
             }
             if(strchr(symbol, currentLine[i]) != NULL)
@@ -247,7 +242,9 @@ char **JackTokenizer(const char *inputName, int *tokenSize)
                 if(currentToken[0] != '\0')
                 {
                     //printf("SYMBOL: %s\n", currentToken);
-                    strcpy(token[current_size], currentToken);
+                    token[currentSize] = tokenAlloc(token, currentSize, strlen(currentToken));
+                    strcpy(token[currentSize], currentToken);
+                    currentSize++;
                 }
                 clearCurrentToken();
             }
@@ -255,7 +252,9 @@ char **JackTokenizer(const char *inputName, int *tokenSize)
             {
                 getKeywordOrIdentifier(&i);
                 //printf("KEYIDENT: %s\n", currentToken);
-                strcpy(token[current_size], currentToken);
+                token[currentSize] = tokenAlloc(token, currentSize, strlen(currentToken));
+                strcpy(token[currentSize], currentToken);
+                currentSize++;
                 clearCurrentToken();
             }
             i++;
@@ -264,7 +263,7 @@ char **JackTokenizer(const char *inputName, int *tokenSize)
     }
 
     currentLine = NULL;
-    *tokenSize = current_size;
+    *tokenSize = currentSize;
     free(inputStream);
     return token;
 }
@@ -320,7 +319,8 @@ void analyzerLogic(char *inputName, char *fileName) //if input is file, fileName
         outputFile = fopen(outputName, "w");
         if(outputFile == NULL)
         {
-        fprintf(stderr, "(analyzerLogic): error opening output file\n");
+            fprintf(stderr, "(analyzerLogic): error opening output file\n");
+            exit(EXIT_FAILURE);
         }
         printf("created output file: %s\n", outputName);
     }
@@ -342,10 +342,15 @@ void analyzerLogic(char *inputName, char *fileName) //if input is file, fileName
         strcat(outputPath, "/");
         strcat(outputPath, outputName);
         outputFile = fopen(outputPath, "w");
+        if(outputFile == NULL)
+        {
+            fprintf(stderr, "(analyzerLogic): error opening output file\n");
+            exit(EXIT_FAILURE);
+        }
         //printf("current output path: %s\n", outputPath);
         printf("created output file: %s\n", outputName);
     }
-    //printf("token size: %d\n", tokenSize);
+    printf("token size: %d\n", tokenSize);
 
     for(int i = 0; i < tokenSize; i++)
     {
@@ -356,9 +361,11 @@ void analyzerLogic(char *inputName, char *fileName) //if input is file, fileName
     {
         for(int i = 0; i < tokenSize; i++)
         {
-            free(token[i]);
+            if(token[i] != NULL)
+                free(token[i]);
         }
-        free(token);
+        if(token != NULL)
+            free(token);
     }
 
     CompilationEngine(outputFile, token); //Use the CompilationEngine to compile the input JackTokenizer into the output file

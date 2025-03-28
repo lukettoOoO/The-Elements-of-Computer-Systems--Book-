@@ -1,1 +1,11 @@
-let sum=10;
+// This is a simple Jack test program
+
+class Main {
+    function void main() {
+        var int x, y;
+        let x = 10;
+        let y = x + 5;
+        do Output.printInt(y);
+        return;
+    }
+}
