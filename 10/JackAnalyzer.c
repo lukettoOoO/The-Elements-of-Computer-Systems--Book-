@@ -5,9 +5,6 @@
 #include <dirent.h>
 #include <stdbool.h>
 
-//The JackTokenizer module:
-//Constructor:
-
 #define CHUNK 32
 #define MAX_HACK_SIZE 32768
 
@@ -20,6 +17,14 @@ int currentTokenIndex = 0;
 
 char *symbol = "{}()[].,;+-*/&|<>=~";
 
+typedef enum {
+    KEYWORD,
+    SYMBOL,
+    IDENTIFIER,
+    INT_CONST,
+    STRING_CONST
+}token_type;
+
 void removeCharacter(int pos)
 {
     for(int i = pos; i < inputSize; i++)
@@ -29,6 +34,9 @@ void removeCharacter(int pos)
     inputSize--;
     inputStream[inputSize] = '\0';
 }
+
+//The JackTokenizer module:
+//Constructor:
 
 void Constructor(const char *inputName)
 {
@@ -120,6 +128,12 @@ void advance()
     currentLine = strtok(NULL, "\n\r\t\f\v");
 }
 
+token_type tokenType(int i)
+{
+    
+}
+
+//main function for JackTokenizer:
 void clearCurrentToken()
 {
     memset(currentToken, 0, sizeof(currentToken));
