@@ -6,6 +6,7 @@ class Main {
         let x = 10;
         let y = x + 5;
         do Output.printInt(y);
+        let x = "abcd";
         return;
     }
 }

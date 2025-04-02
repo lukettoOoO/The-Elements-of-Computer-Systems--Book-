@@ -2,43 +2,48 @@
 argument is: file
 tokenized: Main.jack
 created output file: Main.xml
-token size: 39
-class
-Main
-{
-function
-void
-main
-(
-)
-{
-var
-int
-x
-,
-y
-;
-let
-x
-=
-10
-;
-let
-y
-=
-x
-+
-5
-;
-do
-Output
-.
-printInt
-(
-y
-)
-;
-return
-;
-}
-}
+token size: 44
+0: class
+2: Main
+1: {
+0: function
+0: void
+2: main
+1: (
+1: )
+1: {
+0: var
+0: int
+2: x
+1: ,
+2: y
+1: ;
+0: let
+2: x
+1: =
+3: 10
+1: ;
+0: let
+2: y
+1: =
+2: x
+1: +
+3: 5
+1: ;
+0: do
+2: Output
+1: .
+2: printInt
+1: (
+2: y
+1: )
+1: ;
+0: let
+2: x
+1: =
+4: "abcd"
+1: ;
+0: return
+1: ;
+1: }
+1: }

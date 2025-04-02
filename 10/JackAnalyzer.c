@@ -7,24 +7,53 @@
 
 #define CHUNK 32
 #define MAX_HACK_SIZE 32768
+#define KEY_COUNT 21
 
 FILE *inputFile;
 char *currentLine = NULL; //current line from the contents of the input file/files
-int lineIndex = 0;
 char *inputStream = NULL; //contents of the input file/files
 int inputSize = 0; //size of the current input file
 char currentToken[MAX_HACK_SIZE];
 int currentTokenIndex = 0;
 
 char *symbol = "{}()[].,;+-*/&|<>=~";
+char *keyword[] = {"class", "constructor", "function",
+    "method", "field", "static", "var",
+    "int", "char", "boolean", "void", "true",
+    "false", "null", "this", "let", "do",
+    "if", "else", "while", "return"};
 
 typedef enum {
-    KEYWORD,
-    SYMBOL,
-    IDENTIFIER,
-    INT_CONST,
-    STRING_CONST
+    KEYWORD, //0
+    SYMBOL, //1
+    IDENTIFIER, //2
+    INT_CONST, //3
+    STRING_CONST, //4
 }token_type;
+
+typedef enum {
+    CLASS,
+    METHOD,
+    FUNCTION,
+    CONSTRUCTOR,
+    INT,
+    BOOLEAN,
+    CHAR,
+    VOID,
+    VAR,
+    STATIC,
+    FIELD,
+    LET,
+    DO,
+    IF,
+    ELSE,
+    WHILE,
+    RETURN,
+    TRUE,
+    FALSE,
+    null,
+    THIS
+}key_type;
 
 void removeCharacter(int pos)
 {
@@ -35,6 +64,7 @@ void removeCharacter(int pos)
     inputSize--;
     inputStream[inputSize] = '\0';
 }
+
 
 //The JackTokenizer module:
 //Constructor:
@@ -129,32 +159,38 @@ void advance()
     currentLine = strtok(NULL, "\n\r\t\f\v");
 }
 
-token_type tokenType()
+token_type tokenType(char *token)
 {
-    if(isdigit(currentLine[lineIndex]))
-    {
-        return INT_CONST;
-    }
-    if(currentLine[lineIndex] == '"')
-    {
+    if(strchr(token, '"') != NULL)
         return STRING_CONST;
-    }
-    if(strchr(symbol, currentLine[lineIndex]) != NULL)
+
+    int isIntConst = true;
+    for(int i = 0; i < strlen(token); i++)
     {
+        if(!isdigit(token[i]))
+            isIntConst = false;
+    }
+    if(isIntConst)
+        return INT_CONST;
+
+    if(strchr(symbol, token[0]) != NULL)
         return SYMBOL;
-    }
-    if(isalpha(currentLine[lineIndex]) || currentLine[lineIndex] == '_')
+
+    
+    for(int i = 0; i < KEY_COUNT; i++)
     {
-        //to be implemented:
-        /*if()
+        if(strcmp(keyword[i], token) == 0)
         {
             return KEYWORD;
         }
-        else
-        {
-            return IDENTIFIER;
-        }*/
     }
+
+    return IDENTIFIER;
+}
+
+key_type keyWord(char *key)
+{
+    
 }
 
 //main function for JackTokenizer:
@@ -176,12 +212,14 @@ void getIntegerConstant(int *i)
 
 void getStringConstant(int *i)
 {
+    currentToken[currentTokenIndex++] = currentLine[*i];
     (*i)++;
     while(currentLine[*i] != '"')
     {
         currentToken[currentTokenIndex++] = currentLine[*i];
         (*i)++;
     }
+    currentToken[currentTokenIndex++] = currentLine[*i];
     currentToken[currentTokenIndex] = '\0';
 }
 
@@ -247,34 +285,34 @@ char **JackTokenizer(const char *inputName, int *tokenSize)
     while(hasMoreTokens())
     {
         //printf("LINE: %s\n", currentLine);
-        int lineIndex = 0;
-        while(lineIndex < strlen(currentLine))
+        int i = 0;
+        while(i < strlen(currentLine))
         {
-            if(isspace(currentLine[lineIndex]))
+            if(isspace(currentLine[i]))
             {
-                lineIndex++;
+                i++;
             }
-            if(isdigit(currentLine[lineIndex]))
+            if(isdigit(currentLine[i]))
             {
-                getIntegerConstant(&lineIndex);
+                getIntegerConstant(&i);
                 //printf("INTEGER: %s\n", currentToken);
                 token[currentSize] = tokenAlloc(token, currentSize, strlen(currentToken));
                 strcpy(token[currentSize], currentToken);
                 currentSize++;
                 clearCurrentToken();
             }
-            if(currentLine[lineIndex] == '"')
+            if(currentLine[i] == '"')
             {
-                getStringConstant(&lineIndex);
+                getStringConstant(&i);
                 //printf("STRING: %s\n", currentToken);
                 token[currentSize] = tokenAlloc(token, currentSize, strlen(currentToken));
                 strcpy(token[currentSize], currentToken);
                 currentSize++;
                 clearCurrentToken();
             }
-            if(strchr(symbol, currentLine[lineIndex]) != NULL)
+            if(strchr(symbol, currentLine[i]) != NULL)
             {
-                getSymbol(&lineIndex);
+                getSymbol(&i);
                 if(currentToken[0] != '\0')
                 {
                     //printf("SYMBOL: %s\n", currentToken);
@@ -284,22 +322,21 @@ char **JackTokenizer(const char *inputName, int *tokenSize)
                 }
                 clearCurrentToken();
             }
-            if(isalpha(currentLine[lineIndex]) || currentLine[lineIndex] == '_')
+            if(isalpha(currentLine[i]) || currentLine[i] == '_')
             {
-                getKeywordOrIdentifier(&lineIndex);
+                getKeywordOrIdentifier(&i);
                 //printf("KEYIDENT: %s\n", currentToken);
                 token[currentSize] = tokenAlloc(token, currentSize, strlen(currentToken));
                 strcpy(token[currentSize], currentToken);
                 currentSize++;
                 clearCurrentToken();
             }
-            lineIndex++;
+            i++;
         }
         advance();
     }
 
     currentLine = NULL;
-    lineIndex = 0;
     *tokenSize = currentSize;
     free(inputStream);
     return token;
@@ -391,7 +428,7 @@ void analyzerLogic(char *inputName, char *fileName) //if input is file, fileName
 
     for(int i = 0; i < tokenSize; i++)
     {
-        printf("%s\n", token[i]);
+        printf("%u: %s\n", tokenType(token[i]),  token[i]);
     }
 
     if(token != NULL)
