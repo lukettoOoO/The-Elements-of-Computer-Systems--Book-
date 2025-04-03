@@ -16,8 +16,8 @@ int inputSize = 0; //size of the current input file
 char currentToken[MAX_HACK_SIZE];
 int currentTokenIndex = 0;
 
-char *symbol = "{}()[].,;+-*/&|<>=~";
-char *keyword[] = {"class", "constructor", "function",
+char *symbolList = "{}()[].,;+-*/&|<>=~";
+char *keywordList[] = {"class", "constructor", "function",
     "method", "field", "static", "var",
     "int", "char", "boolean", "void", "true",
     "false", "null", "this", "let", "do",
@@ -51,8 +51,9 @@ typedef enum {
     RETURN,
     TRUE,
     FALSE,
-    null,
-    THIS
+    NULL_KEY,
+    THIS,
+    UNKNOWN
 }key_type;
 
 void removeCharacter(int pos)
@@ -173,13 +174,13 @@ token_type tokenType(char *token)
     if(isIntConst)
         return INT_CONST;
 
-    if(strchr(symbol, token[0]) != NULL)
+    if(strchr(symbolList, token[0]) != NULL)
         return SYMBOL;
 
     
     for(int i = 0; i < KEY_COUNT; i++)
     {
-        if(strcmp(keyword[i], token) == 0)
+        if(strcmp(keywordList[i], token) == 0)
         {
             return KEYWORD;
         }
@@ -190,7 +191,59 @@ token_type tokenType(char *token)
 
 key_type keyWord(char *key)
 {
-    
+    if (strcmp(key, "class") == 0) return CLASS;
+    if (strcmp(key, "method") == 0) return METHOD;
+    if (strcmp(key, "function") == 0) return FUNCTION;
+    if (strcmp(key, "constructor") == 0) return CONSTRUCTOR;
+    if (strcmp(key, "int") == 0) return INT;
+    if (strcmp(key, "boolean") == 0) return BOOLEAN;
+    if (strcmp(key, "char") == 0) return CHAR;
+    if (strcmp(key, "void") == 0) return VOID;
+    if (strcmp(key, "var") == 0) return VAR;
+    if (strcmp(key, "static") == 0) return STATIC;
+    if (strcmp(key, "field") == 0) return FIELD;
+    if (strcmp(key, "let") == 0) return LET;
+    if (strcmp(key, "do") == 0) return DO;
+    if (strcmp(key, "if") == 0) return IF;
+    if (strcmp(key, "else") == 0) return ELSE;
+    if (strcmp(key, "while") == 0) return WHILE;
+    if (strcmp(key, "return") == 0) return RETURN;
+    if (strcmp(key, "true") == 0) return TRUE;
+    if (strcmp(key, "false") == 0) return FALSE;
+    if (strcmp(key, "null") == 0) return NULL_KEY;
+    if (strcmp(key, "this") == 0) return THIS;
+    return UNKNOWN;
+
+}
+
+char symbol(char *sym)
+{
+    return sym[0];
+}
+
+char *identifier(char *ident)
+{
+    return ident;
+}
+
+int intVal(char *intv)
+{
+    return atoi(intv);
+}
+
+char *stringVal(char *str)
+{
+    if (strlen(str) < 2) 
+        return strdup("");
+    char *strval = malloc(strlen(str) - 1);
+    if (!strval) 
+        return NULL;
+    for (int i = 1; i < strlen(str) - 1; i++)
+    {
+        strval[i - 1] = str[i];
+    }
+    strval[strlen(str) - 2] = '\0'; // Null-terminate the string
+    return strval;
 }
 
 //main function for JackTokenizer:
@@ -225,7 +278,7 @@ void getStringConstant(int *i)
 
 void getSymbol(int *i)
 {
-    char *found = strchr(symbol, currentLine[*i]);
+    char *found = strchr(symbolList, currentLine[*i]);
     currentToken[currentTokenIndex++] = found[0];
     currentToken[currentTokenIndex] = '\0';
     //printf("DEBUG: Symbol at index %d: '%c'\n", i, found[0]);
@@ -310,7 +363,7 @@ char **JackTokenizer(const char *inputName, int *tokenSize)
                 currentSize++;
                 clearCurrentToken();
             }
-            if(strchr(symbol, currentLine[i]) != NULL)
+            if(strchr(symbolList, currentLine[i]) != NULL)
             {
                 getSymbol(&i);
                 if(currentToken[0] != '\0')
@@ -426,9 +479,61 @@ void analyzerLogic(char *inputName, char *fileName) //if input is file, fileName
     }
     printf("token size: %d\n", tokenSize);
 
+    //OUTPUT TEST:
     for(int i = 0; i < tokenSize; i++)
     {
-        printf("%u: %s\n", tokenType(token[i]),  token[i]);
+        //printf("%u: %s\n", tokenType(token[i]),  token[i]);
+        printf("token: %s, ", token[i]);
+        printf("token type: ");
+        token_type tt = tokenType(token[i]);
+        char *str_const = NULL;
+        switch (tt) 
+        {  
+            case KEYWORD: 
+                printf("KEYWORD, keyword: ");
+                key_type key = keyWord(token[i]);
+                switch(key)
+                {
+                    case CLASS:       printf("CLASS"); break;
+                    case METHOD:      printf("METHOD"); break;
+                    case FUNCTION:    printf("FUNCTION"); break;
+                    case CONSTRUCTOR: printf("CONSTRUCTOR"); break;
+                    case INT:         printf("INT"); break;
+                    case BOOLEAN:     printf("BOOLEAN"); break;
+                    case CHAR:        printf("CHAR"); break;
+                    case VOID:        printf("VOID"); break;
+                    case VAR:         printf("VAR"); break;
+                    case STATIC:      printf("STATIC"); break;
+                    case FIELD:       printf("FIELD"); break;
+                    case LET:         printf("LET"); break;
+                    case DO:          printf("DO"); break;
+                    case IF:          printf("IF"); break;
+                    case ELSE:        printf("ELSE"); break;
+                    case WHILE:       printf("WHILE"); break;
+                    case RETURN:      printf("RETURN"); break;
+                    case TRUE:        printf("TRUE"); break;
+                    case FALSE:       printf("FALSE"); break;
+                    case NULL_KEY:    printf("NULL"); break;
+                    case THIS:        printf("THIS"); break;
+                    default:          printf("UNKNOWN"); break;
+                }
+                break;
+            case SYMBOL: 
+                printf("SYMBOL, symbol: %c", symbol(token[i]));
+                break;
+            case IDENTIFIER: 
+                printf("IDENTIFIER, identifier: %s", identifier(token[i]));
+                break;
+            case INT_CONST: 
+                printf("INT_CONST, integer value: %d", intVal(token[i]));
+                break;
+            case STRING_CONST: 
+                str_const = stringVal(token[i]);
+                printf("STRING_CONST, string constant: %s", str_const);
+                free(str_const);
+                break;
+        }
+        printf("\n");
     }
 
     if(token != NULL)

@@ -2,48 +2,49 @@
 argument is: file
 tokenized: Main.jack
 created output file: Main.xml
-token size: 44
-0: class
-2: Main
-1: {
-0: function
-0: void
-2: main
-1: (
-1: )
-1: {
-0: var
-0: int
-2: x
-1: ,
-2: y
-1: ;
-0: let
-2: x
-1: =
-3: 10
-1: ;
-0: let
-2: y
-1: =
-2: x
-1: +
-3: 5
-1: ;
-0: do
-2: Output
-1: .
-2: printInt
-1: (
-2: y
-1: )
-1: ;
-0: let
-2: x
-1: =
-4: "abcd"
-1: ;
-0: return
-1: ;
-1: }
-1: }
+token size: 45
+token: class, token type: KEYWORD, keyword: CLASS
+token: method, token type: KEYWORD, keyword: METHOD
+token: function, token type: KEYWORD, keyword: FUNCTION
+token: constructor, token type: KEYWORD, keyword: CONSTRUCTOR
+token: int, token type: KEYWORD, keyword: INT
+token: boolean, token type: KEYWORD, keyword: BOOLEAN
+token: char, token type: KEYWORD, keyword: CHAR
+token: void, token type: KEYWORD, keyword: VOID
+token: var, token type: KEYWORD, keyword: VAR
+token: static, token type: KEYWORD, keyword: STATIC
+token: field, token type: KEYWORD, keyword: FIELD
+token: let, token type: KEYWORD, keyword: LET
+token: do, token type: KEYWORD, keyword: DO
+token: if, token type: KEYWORD, keyword: IF
+token: else, token type: KEYWORD, keyword: ELSE
+token: while, token type: KEYWORD, keyword: WHILE
+token: return, token type: KEYWORD, keyword: RETURN
+token: true, token type: KEYWORD, keyword: TRUE
+token: false, token type: KEYWORD, keyword: FALSE
+token: null, token type: KEYWORD, keyword: NULL
+token: this, token type: KEYWORD, keyword: THIS
+token: {, token type: SYMBOL, symbol: {
+token: }, token type: SYMBOL, symbol: }
+token: (, token type: SYMBOL, symbol: (
+token: ), token type: SYMBOL, symbol: )
+token: [, token type: SYMBOL, symbol: [
+token: ], token type: SYMBOL, symbol: ]
+token: ., token type: SYMBOL, symbol: .
+token: ,, token type: SYMBOL, symbol: ,
+token: ;, token type: SYMBOL, symbol: ;
+token: +, token type: SYMBOL, symbol: +
+token: -, token type: SYMBOL, symbol: -
+token: *, token type: SYMBOL, symbol: *
+token: /, token type: SYMBOL, symbol: /
+token: &, token type: SYMBOL, symbol: &
+token: |, token type: SYMBOL, symbol: |
+token: <, token type: SYMBOL, symbol: <
+token: >, token type: SYMBOL, symbol: >
+token: =, token type: SYMBOL, symbol: =
+token: ~, token type: SYMBOL, symbol: ~
+token: Luca, token type: IDENTIFIER, identifier: Luca
+token: int_value0, token type: IDENTIFIER, identifier: int_value0
+token: 1999, token type: INT_CONST, integer value: 1999
+token: "abcde", token type: STRING_CONST, string constant: abcde
+token: "a", token type: STRING_CONST, string constant: a
